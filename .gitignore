@@ -31,3 +31,5 @@ go.sum
 # Temporary files
 *.tmp
 *.temp
+
+.env
