@@ -6,6 +6,7 @@ import (
 	"os"
 
 	_ "github.com/lib/pq"
+	"github.com/ringtho/inventory/database"
 	"github.com/ringtho/inventory/initializers"
 	"github.com/ringtho/inventory/routers"
 )
@@ -19,7 +20,7 @@ func main() {
 	if port == "" {
 		log.Fatal("PORT not found in the environment")
 	}
-	conn := initializers.ConnectToDatabase()
+	conn := database.ConnectToDatabase()
 	defer conn.Close()
 
 	address := ":" + port
