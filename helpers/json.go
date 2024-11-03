@@ -20,7 +20,7 @@ func JSON(w http.ResponseWriter, status int, payload interface{}) {
 }
 
 // respondWithError is a helper function to write error responses
-func respondWithError(w http.ResponseWriter, status int, message string){
+func RespondWithError(w http.ResponseWriter, status int, message string){
 
 	type errorResponse struct {
 		Error string `json:"error"`

@@ -1,4 +1,4 @@
-package database
+package db
 
 import (
 	"database/sql"
@@ -6,6 +6,7 @@ import (
 	"os"
 )
 
+// ConnectToDatabase connects to the database and returns the connection
 func ConnectToDatabase() *sql.DB {
 	dbURL := os.Getenv("DB_URL")
 
