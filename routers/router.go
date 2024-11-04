@@ -5,14 +5,10 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/ringtho/inventory/controllers"
 	"github.com/ringtho/inventory/helpers"
 	"github.com/ringtho/inventory/internal/database"
-	"github.com/ringtho/inventory/routers/controllers"
 )
-
-type ApiConfig struct {
-	DB *database.Queries
-}
 
 // Router returns a new HTTP handler that implements the main server routes
 func Router(DB *database.Queries) http.Handler {
@@ -20,8 +16,6 @@ func Router(DB *database.Queries) http.Handler {
 	router.Use(middleware.Logger)
 
 	apiRouter := chi.NewRouter()
-
-	apiCfg := ApiConfig{DB: DB}
 
 	
 	apiRouter.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +26,7 @@ func Router(DB *database.Queries) http.Handler {
 		helpers.JSON(w, 200, message)
 	})
 
-	apiRouter.Post("/users", apiCfg.controllers.createUserController)
+	apiRouter.Post("/users", controllers.CreateUserController(DB))
 
 	router.Mount("/api/v1", apiRouter)
 
