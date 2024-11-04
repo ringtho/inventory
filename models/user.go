@@ -44,3 +44,25 @@ func DatabaseUserToUserResponse(user database.CreateUserRow) UserResponse {
 		UpdatedAt: 			user.UpdatedAt,
 	}
 }
+
+func DatabaseUsersToUsers(dbUsers []database.GetAllUsersRow) []UserResponse {
+	userResponses := []UserResponse{}
+
+	for _, dbUser := range dbUsers {
+		var profilePicture *string
+		if dbUser.ProfilePictureUrl.Valid {
+			profilePicture = &dbUser.ProfilePictureUrl.String
+		}
+		userResponses = append(userResponses, UserResponse{
+			ID: 				dbUser.ID,
+			Name: 				dbUser.Name,
+			Username: 			dbUser.Username,
+			Email: 				dbUser.Email,
+			Role: 				dbUser.Role,
+			ProfilePictureUrl: 	profilePicture,
+			CreatedAt: 			dbUser.CreatedAt,
+			UpdatedAt: 			dbUser.UpdatedAt,
+		})
+	}
+	return userResponses
+}

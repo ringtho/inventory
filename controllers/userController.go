@@ -78,3 +78,14 @@ func CreateUserController(DB *database.Queries) http.HandlerFunc {
 		helpers.JSON(w, 201, models.DatabaseUserToUserResponse(user))
 	}
 }
+
+// Get All users
+func GetAllUsersController(DB *database.Queries) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		users, err := DB.GetAllUsers(r.Context())
+		if err != nil {
+			helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't fetch users: %v", err))
+		}
+		helpers.JSON(w, 200, models.DatabaseUsersToUsers(users))
+	}
+}

@@ -14,7 +14,9 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users(id, username, email, name, password, role, profile_picture_url, created_at, updated_at)
+INSERT INTO users(
+    id, username, email, name, password, role, profile_picture_url, created_at, updated_at
+)
 VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING id, username, email, name, role, profile_picture_url, created_at, updated_at
 `
@@ -66,4 +68,53 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getAllUsers = `-- name: GetAllUsers :many
+SELECT 
+    id, username, email, name, role, profile_picture_url, created_at, updated_at
+FROM users
+`
+
+type GetAllUsersRow struct {
+	ID                uuid.UUID
+	Username          string
+	Email             string
+	Name              string
+	Role              string
+	ProfilePictureUrl sql.NullString
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+}
+
+func (q *Queries) GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error) {
+	rows, err := q.db.QueryContext(ctx, getAllUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllUsersRow
+	for rows.Next() {
+		var i GetAllUsersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.Email,
+			&i.Name,
+			&i.Role,
+			&i.ProfilePictureUrl,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

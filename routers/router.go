@@ -26,7 +26,8 @@ func Router(DB *database.Queries) http.Handler {
 		helpers.JSON(w, 200, message)
 	})
 
-	apiRouter.Post("/users", controllers.CreateUserController(DB))
+	apiRouter.Post("/register", controllers.CreateUserController(DB))
+	apiRouter.Get("/users", controllers.GetAllUsersController(DB))
 
 	router.Mount("/api/v1", apiRouter)
 
