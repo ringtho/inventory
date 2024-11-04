@@ -4,16 +4,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	// "strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"github.com/ringtho/inventory/helpers"
 	"github.com/ringtho/inventory/internal/database"
 	"github.com/ringtho/inventory/models"
 )
 
-
-
+// CreateUserController creates a new user
 func CreateUserController(DB *database.Queries) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
@@ -47,6 +49,8 @@ func CreateUserController(DB *database.Queries) http.HandlerFunc {
 		if params.Role != "admin" && params.Role != "user" {
 			params.Role = "user"
 		}
+		// Hash the password
+		password := helpers.HashPassword(params.Password)
 
 		user, err := DB.CreateUser(r.Context(), database.CreateUserParams{
 			ID: 		uuid.New(),
@@ -55,14 +59,24 @@ func CreateUserController(DB *database.Queries) http.HandlerFunc {
 			Name: 		params.Name,
 			Username: 	params.Username,
 			Email: 		params.Email,
-			Password: 	params.Password,
+			Password: 	password,
 			Role: 		params.Role,
 		})
 
 		if err != nil {
+			// Check for specific error type if using PostgreSQL
+			if pqErr, ok := err.(*pq.Error); ok {
+				if pqErr.Code == "23505" { // Unique violation error code for PostgreSQL
+					helpers.RespondWithError(w, 400, "Email or Username already exists")
+					return
+				}
+			}
+
+			// General error response
 			helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't create user: %v", err))
 			return
 		}
+
 		helpers.JSON(w, 201, user)
 	}
 }

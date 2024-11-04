@@ -16,7 +16,7 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users(id, username, email, name, password, role, profile_picture_url, created_at, updated_at)
 VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
-RETURNING id, created_at, updated_at, username, email, password, role, profile_picture_url, name
+RETURNING id, username, email, name, role, profile_picture_url, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -31,7 +31,18 @@ type CreateUserParams struct {
 	UpdatedAt         time.Time
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+type CreateUserRow struct {
+	ID                uuid.UUID
+	Username          string
+	Email             string
+	Name              string
+	Role              string
+	ProfilePictureUrl sql.NullString
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
 	row := q.db.QueryRowContext(ctx, createUser,
 		arg.ID,
 		arg.Username,
@@ -43,17 +54,16 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
-	var i User
+	var i CreateUserRow
 	err := row.Scan(
 		&i.ID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.Username,
 		&i.Email,
-		&i.Password,
+		&i.Name,
 		&i.Role,
 		&i.ProfilePictureUrl,
-		&i.Name,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
