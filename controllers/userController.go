@@ -139,17 +139,19 @@ func (apiCfg ApiCfg) GetAllUsersController(
 	helpers.JSON(w, 200, models.DatabaseUsersToUsers(users))
 }
 
-// Delete user
-func DeleteUserController(DB *database.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+// Delete user using id
+func (apiCfg ApiCfg) DeleteUserController(
+	w http.ResponseWriter, 
+	r *http.Request, 
+	user database.User,
+	) {
 		idStr := chi.URLParam(r, "userId")
 		id, err := uuid.Parse(idStr)
-
 		if err != nil {
 			helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse userId: %v", err))
 			return
 		}
-		err = DB.DeleteUser(r.Context(), id)
+		err = apiCfg.DB.DeleteUser(r.Context(), id)
 
 		if err != nil {
 			helpers.RespondWithError(w, 400, fmt.Sprintf("Failed to delete user: %v", err))
@@ -157,5 +159,4 @@ func DeleteUserController(DB *database.Queries) http.HandlerFunc {
 		}
 
 		helpers.TextResponse(w, 200, fmt.Sprintf("Successfully deleted user with id: %v", id))
-	}
 }
