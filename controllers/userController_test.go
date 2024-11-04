@@ -1,0 +1,87 @@
+package controllers
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+	"time"
+
+	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/google/uuid"
+	"github.com/ringtho/inventory/internal/database"
+	"github.com/ringtho/inventory/models"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestCreateUserController(t *testing.T) {
+	// Create a new mock database
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err, "Expected no error while creating a new mock database")
+	defer db.Close()
+
+	// Create a new instance of the database queries
+	queries := database.New(db)
+	apiCfg := ApiCfg{DB: queries}
+
+	// Test Data
+	userID := uuid.New()
+	mockUser := models.User{
+		Name:     "John Doe",
+		Username: "johndoe",
+		Email:    "johndoe@gmail.com",
+		Password: "StrongPass123",
+		Role:    "user",
+	}
+
+	// Define a successful insert mock response
+	mock.ExpectQuery(`INSERT INTO users`).
+		WithArgs(
+			sqlmock.AnyArg(), // ID
+			mockUser.Username, // Username
+			mockUser.Email, //	Email
+			mockUser.Name, // Name
+			sqlmock.AnyArg(), // Password
+			mockUser.Role, // Role
+			sqlmock.AnyArg(), // ProfilePictureUrl
+			sqlmock.AnyArg(),	// CreatedAt
+			sqlmock.AnyArg(),	// UpdatedAt
+		).
+		WillReturnRows(sqlmock.NewRows([]string{
+			"id","username","email","name","role","profile_picture_url","created_at","updated_at",
+		}).AddRow(
+			userID, mockUser.Username, mockUser.Email, mockUser.Name, mockUser.Role, nil, time.Now(), time.Now(),
+		))
+			
+
+	// Define the payload for the request
+	payload, _ := json.Marshal(mockUser)
+
+	// Create a new request
+	req, err := http.NewRequest("POST", "/api/v1/register", bytes.NewBuffer(payload))
+	assert.NoError(t, err, "Expected no error while creating a new request")
+	req.Header.Set("Content-Type", "application/json")
+
+	// Create a new response recorder
+	rr := httptest.NewRecorder()
+	
+	// Create a new handler
+	handler := http.HandlerFunc(apiCfg.CreateUserController)
+	handler.ServeHTTP(rr, req)
+
+	fmt.Println("Response Body:", rr.Body.String())
+	assert.Equal(t, http.StatusCreated, rr.Code, "Expected status code to be 201 Created")
+
+	// Check the response body
+	var response models.UserResponse
+	err = json.NewDecoder(rr.Body).Decode(&response)
+	assert.NoError(t, err, "Expected no error while decoding the response body")
+
+	assert.Equal(t, mockUser.Name, response.Name, "Expected the user name to match")
+	assert.Equal(t, mockUser.Username, response.Username, "Expected the username to match")
+	assert.Equal(t, mockUser.Email, response.Email, "Expected the email to match")
+	assert.Equal(t, mockUser.Role, response.Role, "Expected the role to match")
+	assert.Nil(t, response.ProfilePictureUrl, "Expected the profile picture URL to be nil")
+}
