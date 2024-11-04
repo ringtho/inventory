@@ -66,3 +66,33 @@ func DatabaseUsersToUsers(dbUsers []database.GetAllUsersRow) []UserResponse {
 	}
 	return userResponses
 }
+
+type LoginResponse struct {
+	Token string `json:"token"`
+	User UserResponse `json:"user"`
+	// ID  uuid.UUID `json:"id"`
+	// Name string `json:"name"`
+	// Username string `json:"username"`
+	// Email string `json:"email"`
+	// Role string `json:"role"`
+	// ProfilePictureUrl *string `json:"profile_picture_url"`
+}
+
+func SanitizeLoginResponse(user database.User, token string) LoginResponse {
+	var profilePicture *string
+	if user.ProfilePictureUrl.Valid {
+		profilePicture = &user.ProfilePictureUrl.String
+	}
+
+	return LoginResponse{
+		Token: 				token,
+		User: 				UserResponse{
+			ID: 				user.ID,
+			Name: 				user.Name,
+			Username: 			user.Username,
+			Email: 				user.Email,
+			Role: 				user.Role,
+			ProfilePictureUrl: 	profilePicture,
+		},
+	}
+}

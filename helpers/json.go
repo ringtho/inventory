@@ -28,3 +28,11 @@ func RespondWithError(w http.ResponseWriter, status int, message string){
 
 	JSON(w, status, errorResponse{Error: message})
 }
+
+func TextResponse(w http.ResponseWriter, status int, message string) {
+	type Message struct {
+		Message string `json:"message"`
+	}
+	msg := Message{Message: message}
+	JSON(w, status, msg)
+}

@@ -27,7 +27,9 @@ func Router(DB *database.Queries) http.Handler {
 	})
 
 	apiRouter.Post("/register", controllers.CreateUserController(DB))
+	apiRouter.Post("/login", controllers.LoginController(DB))
 	apiRouter.Get("/users", controllers.GetAllUsersController(DB))
+	apiRouter.Delete("/users/{userId}", controllers.DeleteUserController(DB))
 
 	router.Mount("/api/v1", apiRouter)
 

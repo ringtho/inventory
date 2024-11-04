@@ -7,6 +7,7 @@ import (
 
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"github.com/ringtho/inventory/helpers"
@@ -79,6 +80,48 @@ func CreateUserController(DB *database.Queries) http.HandlerFunc {
 	}
 }
 
+// Login user
+func LoginController(DB *database.Queries) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		var params models.User
+		err := decoder.Decode(&params)
+
+		if err != nil {
+			helpers.RespondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %v", err))
+			return
+		}
+
+		// Check if the required fields are present
+		if params.Email == "" || params.Password == "" {
+			helpers.RespondWithError(w, 400, "Email and Password are required")
+			return
+		}
+
+		user, err := DB.GetUserByEmail(r.Context(), params.Email)
+
+		if err != nil {
+			helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't fetch user: %v", err))
+			return
+		}
+
+		// Check if the password is correct
+		if !helpers.CheckPasswordHash(user.Password, params.Password) {
+			helpers.RespondWithError(w, 400, "Invalid email or password")
+			return
+		}
+
+		//	Generate JWT token
+		token, err := helpers.GenerateJWT(user.ID, user.Role)
+		if err != nil {
+			helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't generate token: %v", err))
+			return
+		}
+
+		helpers.JSON(w, 200, models.SanitizeLoginResponse(user, token))
+	}
+}
+
 // Get All users
 func GetAllUsersController(DB *database.Queries) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -87,5 +130,26 @@ func GetAllUsersController(DB *database.Queries) http.HandlerFunc {
 			helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't fetch users: %v", err))
 		}
 		helpers.JSON(w, 200, models.DatabaseUsersToUsers(users))
+	}
+}
+
+// Delete user
+func DeleteUserController(DB *database.Queries) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := chi.URLParam(r, "userId")
+		id, err := uuid.Parse(idStr)
+
+		if err != nil {
+			helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse userId: %v", err))
+			return
+		}
+		err = DB.DeleteUser(r.Context(), id)
+
+		if err != nil {
+			helpers.RespondWithError(w, 400, fmt.Sprintf("Failed to delete user: %v", err))
+			return
+		}
+
+		helpers.TextResponse(w, 200, fmt.Sprintf("Successfully deleted user with id: %v", id))
 	}
 }
