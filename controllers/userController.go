@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	// "strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -64,19 +63,18 @@ func CreateUserController(DB *database.Queries) http.HandlerFunc {
 		})
 
 		if err != nil {
-			// Check for specific error type if using PostgreSQL
+			// Check for unique violation using PostgreSQL
 			if pqErr, ok := err.(*pq.Error); ok {
 				if pqErr.Code == "23505" { // Unique violation error code for PostgreSQL
 					helpers.RespondWithError(w, 400, "Email or Username already exists")
 					return
 				}
 			}
-
 			// General error response
 			helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't create user: %v", err))
 			return
 		}
 
-		helpers.JSON(w, 201, user)
+		helpers.JSON(w, 201, models.DatabaseUserToUserResponse(user))
 	}
 }
