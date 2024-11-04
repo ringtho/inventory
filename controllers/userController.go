@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -131,7 +132,7 @@ func (apiCfg ApiCfg) GetAllUsersController(
 		helpers.RespondWithError(w, 403, "Unauthorized")
 		return
 	}
-	
+
 	users, err := apiCfg.DB.GetAllUsers(r.Context())
 	if err != nil {
 		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't fetch users: %v", err))
@@ -156,6 +157,18 @@ func (apiCfg ApiCfg) DeleteUserController(
 			helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse userId: %v", err))
 			return
 		}
+
+		// Check if the user exists
+		_, err = apiCfg.DB.GetUserById(r.Context(), id)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				helpers.RespondWithError(w, 404, "User not found")
+				return
+			}
+			helpers.RespondWithError(w, 500, fmt.Sprintf("Failed to check if user exists: %v", err))
+			return
+		}
+
 		err = apiCfg.DB.DeleteUser(r.Context(), id)
 
 		if err != nil {
