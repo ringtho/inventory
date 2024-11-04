@@ -15,6 +15,10 @@ import (
 	"github.com/ringtho/inventory/models"
 )
 
+type ApiCfg struct {
+	DB *database.Queries
+}
+
 // CreateUserController creates a new user
 func CreateUserController(DB *database.Queries) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
@@ -123,14 +127,16 @@ func LoginController(DB *database.Queries) http.HandlerFunc {
 }
 
 // Get All users
-func GetAllUsersController(DB *database.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		users, err := DB.GetAllUsers(r.Context())
-		if err != nil {
-			helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't fetch users: %v", err))
-		}
-		helpers.JSON(w, 200, models.DatabaseUsersToUsers(users))
+func (apiCfg ApiCfg) GetAllUsersController(
+	w http.ResponseWriter, 
+	r *http.Request, 
+	user database.User,
+	) {
+	users, err := apiCfg.DB.GetAllUsers(r.Context())
+	if err != nil {
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't fetch users: %v", err))
 	}
+	helpers.JSON(w, 200, models.DatabaseUsersToUsers(users))
 }
 
 // Delete user

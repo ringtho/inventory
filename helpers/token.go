@@ -41,3 +41,25 @@ func GenerateJWT(id uuid.UUID, role string) (string, error) {
 
 	return tokenString, nil
 }
+
+func VerifyToken(tokenString string) (*Claims, error) {
+	secret_key := os.Getenv("SECRET_KEY")
+	if secret_key == "" {
+		log.Fatal("SECRET_KEY not found in the environment")
+	}
+
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(secret_key), nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(*Claims)
+	if !ok || !token.Valid {
+		return nil, err
+	}
+
+	return claims, nil
+}
