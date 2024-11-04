@@ -71,7 +71,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 }
 
 const deleteUser = `-- name: DeleteUser :exec
-DELETE FROM users WHERE id = $1
+DELETE FROM users WHERE id = $1 AND role != 'admin'
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {

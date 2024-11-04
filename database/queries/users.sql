@@ -17,4 +17,4 @@ SELECT
 FROM users;
 
 -- name: DeleteUser :exec
-DELETE FROM users WHERE id = $1;
+DELETE FROM users WHERE id = $1 AND role != 'admin';
