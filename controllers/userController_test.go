@@ -3,7 +3,6 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,11 +10,13 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"github.com/ringtho/inventory/internal/database"
 	"github.com/ringtho/inventory/models"
 	"github.com/stretchr/testify/assert"
 )
 
+// Test the CreateUserController function
 func TestCreateUserController(t *testing.T) {
 	// Create a new mock database
 	db, mock, err := sqlmock.New()
@@ -39,15 +40,15 @@ func TestCreateUserController(t *testing.T) {
 	// Define a successful insert mock response
 	mock.ExpectQuery(`INSERT INTO users`).
 		WithArgs(
-			sqlmock.AnyArg(), // ID
-			mockUser.Username, // Username
-			mockUser.Email, //	Email
-			mockUser.Name, // Name
-			sqlmock.AnyArg(), // Password
-			mockUser.Role, // Role
-			sqlmock.AnyArg(), // ProfilePictureUrl
-			sqlmock.AnyArg(),	// CreatedAt
-			sqlmock.AnyArg(),	// UpdatedAt
+			sqlmock.AnyArg(),
+			mockUser.Username,
+			mockUser.Email,
+			mockUser.Name,
+			sqlmock.AnyArg(),
+			mockUser.Role, 
+			sqlmock.AnyArg(), 
+			sqlmock.AnyArg(),
+			sqlmock.AnyArg(),	
 		).
 		WillReturnRows(sqlmock.NewRows([]string{
 			"id","username","email","name","role","profile_picture_url","created_at","updated_at",
@@ -71,7 +72,7 @@ func TestCreateUserController(t *testing.T) {
 	handler := http.HandlerFunc(apiCfg.CreateUserController)
 	handler.ServeHTTP(rr, req)
 
-	fmt.Println("Response Body:", rr.Body.String())
+	// fmt.Println("Response Body:", rr.Body.String())
 	assert.Equal(t, http.StatusCreated, rr.Code, "Expected status code to be 201 Created")
 
 	// Check the response body
@@ -84,4 +85,52 @@ func TestCreateUserController(t *testing.T) {
 	assert.Equal(t, mockUser.Email, response.Email, "Expected the email to match")
 	assert.Equal(t, mockUser.Role, response.Role, "Expected the role to match")
 	assert.Nil(t, response.ProfilePictureUrl, "Expected the profile picture URL to be nil")
+}
+
+// Test the CreateUserController function with a duplicate user
+func TestCreateUserController_DuplicateUser(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err, "Expected no error while creating a new mock database")
+	defer db.Close()
+
+	queries := database.New(db)
+	apiCfg := ApiCfg{DB: queries}
+
+	mockUser := models.User{
+		Name:     "John Doe",
+		Username: "johndoe",
+		Email:    "johndoe@gmail.com",
+		Password: "StrongPass123",
+		Role:    "user",
+	}
+
+	mock.ExpectQuery(`INSERT INTO users`).
+	WithArgs(
+		sqlmock.AnyArg(), 
+		mockUser.Username, 
+		mockUser.Email, 
+		mockUser.Name, 
+		sqlmock.AnyArg(), 
+		mockUser.Role, 
+		sqlmock.AnyArg(), 
+		sqlmock.AnyArg(), 
+		sqlmock.AnyArg(),
+	).
+	WillReturnError(&pq.Error{Code: "23505"})
+
+	payload, _ := json.Marshal(mockUser)
+
+	req, err := http.NewRequest("POST", "/api/v1/register", bytes.NewBuffer(payload))
+	assert.NoError(t, err, "Expected no error while creating a new request")
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(apiCfg.CreateUserController)
+	handler.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusConflict, rr.Code, "Expected status code to be 409 Conflict")
+	assert.Contains(t, rr.Body.String(), 
+	"Email or Username already exists", 
+	"Expected the response body to contain the error message",
+	)
 }

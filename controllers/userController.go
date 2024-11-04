@@ -71,7 +71,7 @@ func (apiCfg ApiCfg) CreateUserController(w http.ResponseWriter, r *http.Request
 		// Check for unique violation using PostgreSQL
 		if pqErr, ok := err.(*pq.Error); ok {
 			if pqErr.Code == "23505" { // Unique violation error code for PostgreSQL
-				helpers.RespondWithError(w, 400, "Email or Username already exists")
+				helpers.RespondWithError(w, 409, "Email or Username already exists")
 				return
 			}
 		}
