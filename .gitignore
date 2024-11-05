@@ -15,7 +15,7 @@
 go.work
 
 # Go modules
-go.mod
+# go.mod
 go.sum
 
 # IDE/editor specific files
