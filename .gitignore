@@ -16,7 +16,7 @@ go.work
 
 # Go modules
 # go.mod
-go.sum
+# go.sum
 
 # IDE/editor specific files
 .vscode/
