@@ -35,6 +35,8 @@ func Router(DB *database.Queries) http.Handler {
 	apiRouter.Get("/users", cfg.MiddlewareAuth(apiCfg.GetAllUsersController))
 	apiRouter.Delete("/users/{userId}", cfg.MiddlewareAuth(apiCfg.DeleteUserController))
 
+	apiRouter.Post("/categories", apiCfg.CreateCategoryController)
+
 	router.Mount("/api/v1", apiRouter)
 	return router
 }

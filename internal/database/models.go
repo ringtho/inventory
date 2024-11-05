@@ -11,6 +11,14 @@ import (
 	"github.com/google/uuid"
 )
 
+type Category struct {
+	ID          uuid.UUID
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	Name        string
+	Description sql.NullString
+}
+
 type User struct {
 	ID                uuid.UUID
 	CreatedAt         time.Time
