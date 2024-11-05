@@ -17,6 +17,7 @@ type Category struct {
 	UpdatedAt   time.Time
 	Name        string
 	Description sql.NullString
+	CreatedBy   uuid.UUID
 }
 
 type User struct {

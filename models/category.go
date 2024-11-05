@@ -13,6 +13,7 @@ type Category struct {
 	Description *string `json:"description"`
 	CreatedAt time.Time	`json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	CreatedBy uuid.UUID `json:"created_by"`
 }
 
 func DatabaseCategoryToCategory(dbCategory database.Category) Category{
@@ -22,5 +23,6 @@ func DatabaseCategoryToCategory(dbCategory database.Category) Category{
 		Description: &dbCategory.Description.String,
 		CreatedAt: dbCategory.CreatedAt,
 		UpdatedAt: dbCategory.UpdatedAt,
+		CreatedBy: dbCategory.CreatedBy,
 	}
 }

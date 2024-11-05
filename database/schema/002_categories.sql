@@ -4,7 +4,8 @@ CREATE TABLE categories (
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     name VARCHAR(100) NOT NULL UNIQUE,
-    description TEXT
+    description TEXT,
+    created_by UUID NOT NULL
 );
 
 

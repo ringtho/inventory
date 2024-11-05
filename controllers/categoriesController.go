@@ -15,11 +15,22 @@ import (
 )
 
 
-func (cfg ApiCfg) CreateCategoryController(w http.ResponseWriter, r *http.Request) {
+func (cfg ApiCfg) CreateCategoryController(
+	w http.ResponseWriter, 
+	r *http.Request, 
+	user database.User,
+	) {
+
+	if user.Role == "user" {
+		helpers.RespondWithError(w, 401, "Unauthorized")
+		return
+	} 
 	type parameters struct {
-		Name 		string `json:"name"`
-		Description *string `json:"description"`
+		Name 			string `json:"name"`
+		Description 	*string `json:"description"`
+		CreatedBy  		uuid.UUID `json:"created_by"`
 	}
+
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
 	err := decoder.Decode(&params)
@@ -49,6 +60,7 @@ func (cfg ApiCfg) CreateCategoryController(w http.ResponseWriter, r *http.Reques
 		Description: description,
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
+		CreatedBy: user.ID,
 	})
 
 	if err != nil {

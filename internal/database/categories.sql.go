@@ -15,10 +15,10 @@ import (
 
 const createCategory = `-- name: CreateCategory :one
 INSERT INTO categories (
-    id, name, description, created_at, updated_at
+    id, name, description, created_at, updated_at, created_by
 )
-VALUES ($1,$2,$3,$4,$5)
-RETURNING id, created_at, updated_at, name, description
+VALUES ($1,$2,$3,$4,$5, $6)
+RETURNING id, created_at, updated_at, name, description, created_by
 `
 
 type CreateCategoryParams struct {
@@ -27,6 +27,7 @@ type CreateCategoryParams struct {
 	Description sql.NullString
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+	CreatedBy   uuid.UUID
 }
 
 func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error) {
@@ -36,6 +37,7 @@ func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) 
 		arg.Description,
 		arg.CreatedAt,
 		arg.UpdatedAt,
+		arg.CreatedBy,
 	)
 	var i Category
 	err := row.Scan(
@@ -44,6 +46,7 @@ func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) 
 		&i.UpdatedAt,
 		&i.Name,
 		&i.Description,
+		&i.CreatedBy,
 	)
 	return i, err
 }
