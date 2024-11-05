@@ -1,0 +1,40 @@
+name: Test Coverage
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.18'
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run Tests with Coverage
+        run: go test -coverprofile=coverage.txt ./...
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-report
+          path: coverage.txt
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+            files: coverage.txt
+            flags: unittests
+            name: codecov-umbrella
+            fail_ci_if_error: true
