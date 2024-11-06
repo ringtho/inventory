@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"github.com/ringtho/inventory/helpers"
@@ -76,10 +77,45 @@ func (cfg ApiCfg) CreateCategoryController(
 	helpers.JSON(w, 200, models.DatabaseCategoryToCategory(category))
 }
 
-func (cfg ApiCfg) GetCategories(w http.ResponseWriter, r *http.Request) {
+func (cfg ApiCfg) GetCategoriesController(w http.ResponseWriter, r *http.Request) {
 	categories, err := cfg.DB.GetCategories(r.Context())
 	if err != nil {
 		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't fetch categories: %v", err))
 	}
 	helpers.JSON(w, 200, models.DatabaseCategoriesToCategories(categories))
+}
+
+func (cfg ApiCfg) DeleteCategoryController(w http.ResponseWriter, r *http.Request, user database.User) {
+	if user.Role == "user" {
+		helpers.RespondWithError(w, 403, "Unauthorized")
+		return
+	}
+
+	idStr := chi.URLParam(r, "categoryId")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse string: %v", err))
+		return
+	}
+
+	if !cfg.checkCategoryExists(w, r, id) {
+		return
+	}
+
+	err = cfg.DB.DeleteCategory(r.Context(), id)
+
+	if err != nil {
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't delete category: %v", err))
+		return
+	}
+	helpers.TextResponse(w, 400, fmt.Sprintf("Successfully deleted category with id %v", id))
+}
+
+func (cfg ApiCfg) checkCategoryExists(w http.ResponseWriter, r *http.Request,id uuid.UUID) bool {
+	_, err := cfg.DB.GetCategoryById(r.Context(), id)
+	if err != nil {
+		helpers.RespondWithError(w, 404, "Category not found")
+		return false
+	}
+	return true
 }
