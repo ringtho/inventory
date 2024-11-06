@@ -26,3 +26,27 @@ func DatabaseCategoryToCategory(dbCategory database.Category) Category{
 		CreatedBy: dbCategory.CreatedBy,
 	}
 }
+
+func DatabaseCategoriesToCategories(dbCategories []database.Category) []Category {
+	categories := []Category{}
+
+	
+
+	for _, dbCategory := range dbCategories {
+		var description *string
+		if dbCategory.Description.Valid {
+			description = &dbCategory.Description.String
+		}
+		category := Category{ 
+			ID: dbCategory.ID,
+			Name: dbCategory.Name,
+			Description: description,
+			CreatedAt: dbCategory.CreatedAt,
+			UpdatedAt: dbCategory.UpdatedAt,
+			CreatedBy: dbCategory.CreatedBy,
+		}
+		categories = append(categories, category)
+	}
+
+	return categories
+}

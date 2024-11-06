@@ -75,3 +75,11 @@ func (cfg ApiCfg) CreateCategoryController(
 	}
 	helpers.JSON(w, 200, models.DatabaseCategoryToCategory(category))
 }
+
+func (cfg ApiCfg) GetCategories(w http.ResponseWriter, r *http.Request) {
+	categories, err := cfg.DB.GetCategories(r.Context())
+	if err != nil {
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't fetch categories: %v", err))
+	}
+	helpers.JSON(w, 200, models.DatabaseCategoriesToCategories(categories))
+}

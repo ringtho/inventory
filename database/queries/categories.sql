@@ -4,3 +4,6 @@ INSERT INTO categories (
 )
 VALUES ($1,$2,$3,$4,$5, $6)
 RETURNING *;
+
+-- name: GetCategories :many
+SELECT * FROM categories;
