@@ -72,7 +72,6 @@ func TestCreateUserController(t *testing.T) {
 	handler := http.HandlerFunc(apiCfg.CreateUserController)
 	handler.ServeHTTP(rr, req)
 
-	// fmt.Println("Response Body:", rr.Body.String())
 	assert.Equal(t, http.StatusCreated, rr.Code, "Expected status code to be 201 Created")
 
 	// Check the response body
@@ -293,4 +292,35 @@ func TestCreateUserController_InvalidRoleDefaultsToUser(t *testing.T) {
 	assert.NoError(t, err, "Expected no error while decoding the response body")
 
 	assert.Equal(t, mockUser.Role, response.Role, "Expected the role to be user")
+}
+
+func TestCreateUser_ParsingError(t *testing.T) {
+	db, _, err := sqlmock.New()
+	assert.NoError(t, err, "Expected no error while creating a new mock database")
+	defer db.Close()
+
+	querries := database.New(db)
+	apiCfg := ApiCfg{ DB: querries}
+
+	mockUser := ""
+
+	payload, _ := json.Marshal(mockUser)
+
+	req, err := http.NewRequest("POST", "/api/v1/register", bytes.NewBuffer(payload))
+	assert.NoError(t, err, "Expected no error while creating a new request")
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(apiCfg.CreateUserController)
+	handler.ServeHTTP(rr, req)
+
+	// fmt.Println("Response Body:", rr.Body.String())
+	assert.Equal(t, http.StatusBadRequest, rr.Code, "Expected status code to be 400 Bad Request")
+	assert.Contains(
+		t, 
+		rr.Body.String(), 
+		"Error parsing JSON", 
+		"Expected the response body to contain the error message",
+	)
+
 }
