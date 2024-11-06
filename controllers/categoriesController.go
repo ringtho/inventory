@@ -15,6 +15,11 @@ import (
 	"github.com/ringtho/inventory/models"
 )
 
+type parameters struct {
+	Name 			string `json:"name"`
+	Description 	*string `json:"description"`
+	CreatedBy  		uuid.UUID `json:"created_by"`
+}
 
 func (cfg ApiCfg) CreateCategoryController(
 	w http.ResponseWriter, 
@@ -26,11 +31,6 @@ func (cfg ApiCfg) CreateCategoryController(
 		helpers.RespondWithError(w, 401, "Unauthorized")
 		return
 	} 
-	type parameters struct {
-		Name 			string `json:"name"`
-		Description 	*string `json:"description"`
-		CreatedBy  		uuid.UUID `json:"created_by"`
-	}
 
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
@@ -111,7 +111,77 @@ func (cfg ApiCfg) DeleteCategoryController(w http.ResponseWriter, r *http.Reques
 	helpers.TextResponse(w, 400, fmt.Sprintf("Successfully deleted category with id %v", id))
 }
 
-func (cfg ApiCfg) checkCategoryExists(w http.ResponseWriter, r *http.Request,id uuid.UUID) bool {
+func (cfg ApiCfg) UpdateCategoryController(
+	w http.ResponseWriter,
+	r *http.Request,
+	user database.User,
+	) {
+	if user.Role == "user" {
+		helpers.RespondWithError(w, 403, "Unauthorized")
+		return
+	}
+
+	idStr := chi.URLParam(r, "categoryId")
+	id, err := uuid.Parse(idStr)
+
+	if err != nil {
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse string: %v", err))
+		return
+	}
+
+	if !cfg.checkCategoryExists(w, r, id){
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	params := parameters{}
+	err = decoder.Decode(&params)
+
+	if err != nil {
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %v", err))
+		return
+	}
+
+	if params.Name == "" {
+		helpers.RespondWithError(w, 400, "Category name is required")
+		return
+	}
+
+	description := sql.NullString{
+		String: "",
+		Valid: params.Description != nil,
+	}
+
+	if params.Description != nil {
+		description.String = *params.Description
+	}
+
+	category, err := cfg.DB.UpdateCategory(r.Context(), database.UpdateCategoryParams{
+		ID: id,
+		Name: params.Name,
+		Description: description,
+		UpdatedAt: time.Now().UTC(),
+	})
+
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			if pqErr.Code == "23505" { 
+				helpers.RespondWithError(w, 409, "Category Name already exists")
+				return
+			}
+		}
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't update category: %v", err))
+		return
+	}
+	helpers.JSON(w, 200, models.DatabaseCategoryToCategory(category))
+
+}
+
+func (cfg ApiCfg) checkCategoryExists(
+	w http.ResponseWriter,
+	r *http.Request,
+	id uuid.UUID,
+	) bool {
 	_, err := cfg.DB.GetCategoryById(r.Context(), id)
 	if err != nil {
 		helpers.RespondWithError(w, 404, "Category not found")

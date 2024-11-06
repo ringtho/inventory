@@ -37,6 +37,7 @@ func Router(DB *database.Queries) http.Handler {
 
 	apiRouter.Post("/categories", cfg.MiddlewareAuth(apiCfg.CreateCategoryController))
 	apiRouter.Get("/categories", apiCfg.GetCategoriesController)
+	apiRouter.Put("/categories/{categoryId}", cfg.MiddlewareAuth(apiCfg.UpdateCategoryController))
 	apiRouter.Delete("/categories/{categoryId}", cfg.MiddlewareAuth(apiCfg.DeleteCategoryController))
 
 	router.Mount("/api/v1", apiRouter)

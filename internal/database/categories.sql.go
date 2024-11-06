@@ -111,3 +111,39 @@ func (q *Queries) GetCategoryById(ctx context.Context, id uuid.UUID) (Category, 
 	)
 	return i, err
 }
+
+const updateCategory = `-- name: UpdateCategory :one
+UPDATE categories
+SET
+name = $2,
+description = $3,
+updated_at = $4
+WHERE id = $1
+RETURNING id, created_at, updated_at, name, description, created_by
+`
+
+type UpdateCategoryParams struct {
+	ID          uuid.UUID
+	Name        string
+	Description sql.NullString
+	UpdatedAt   time.Time
+}
+
+func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error) {
+	row := q.db.QueryRowContext(ctx, updateCategory,
+		arg.ID,
+		arg.Name,
+		arg.Description,
+		arg.UpdatedAt,
+	)
+	var i Category
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.Description,
+		&i.CreatedBy,
+	)
+	return i, err
+}
