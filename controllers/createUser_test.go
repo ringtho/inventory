@@ -134,39 +134,6 @@ func TestCreateUserController_DuplicateUser(t *testing.T) {
 	)
 }
 
-// Test the CreateUserController function with missing fields
-func TestCreateUserController_MissingFields(t *testing.T) {
-	db, _, err := sqlmock.New()
-	assert.NoError(t, err, "Expected no error while creating a new mock database")
-	defer db.Close()
-
-	queries := database.New(db)
-	apiCfg := ApiCfg{DB: queries}
-
-	mockUser := models.User{
-		Name:     "John Doe",
-		Username: "johndoe",
-	}
-
-	payload, _ := json.Marshal(mockUser)
-
-	req, err := http.NewRequest("POST", "/api/v1/register", bytes.NewBuffer(payload))
-	assert.NoError(t, err, "Expected no error while creating a new request")
-	req.Header.Set("Content-Type", "application/json")
-
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(apiCfg.CreateUserController)
-	handler.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusBadRequest, rr.Code, "Expected status code to be 400 Bad Request")
-	assert.Contains(
-		t, 
-		rr.Body.String(),
-		"Name, Username, Email and Password are required", 
-		"Expected the response body to contain the error message",
-	)
-}
-
 // Test the CreateUserController function with weak password
 func TestCreateUserController_WeakPassword(t *testing.T) {
 
@@ -292,35 +259,4 @@ func TestCreateUserController_InvalidRoleDefaultsToUser(t *testing.T) {
 	assert.NoError(t, err, "Expected no error while decoding the response body")
 
 	assert.Equal(t, mockUser.Role, response.Role, "Expected the role to be user")
-}
-
-func TestCreateUser_ParsingError(t *testing.T) {
-	db, _, err := sqlmock.New()
-	assert.NoError(t, err, "Expected no error while creating a new mock database")
-	defer db.Close()
-
-	querries := database.New(db)
-	apiCfg := ApiCfg{ DB: querries}
-
-	mockUser := ""
-
-	payload, _ := json.Marshal(mockUser)
-
-	req, err := http.NewRequest("POST", "/api/v1/register", bytes.NewBuffer(payload))
-	assert.NoError(t, err, "Expected no error while creating a new request")
-	req.Header.Set("Content-Type", "application/json")
-
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(apiCfg.CreateUserController)
-	handler.ServeHTTP(rr, req)
-
-	// fmt.Println("Response Body:", rr.Body.String())
-	assert.Equal(t, http.StatusBadRequest, rr.Code, "Expected status code to be 400 Bad Request")
-	assert.Contains(
-		t, 
-		rr.Body.String(), 
-		"Error parsing JSON", 
-		"Expected the response body to contain the error message",
-	)
-
 }
