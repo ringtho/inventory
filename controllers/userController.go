@@ -101,18 +101,8 @@ func (apiCfg ApiCfg) LoginController(w http.ResponseWriter, r *http.Request) {
 
 	user, err := apiCfg.DB.GetUserByEmail(r.Context(), params.Email)
 
-	// if err != nil || !helpers.CheckPasswordHash(user.Password, params.Password){
-	// 	helpers.RespondWithError(w, 400, "Invalid email or password")
-	// 	return
-	// }
-
-	if err != nil {
-		helpers.RespondWithError(w, 400, fmt.Sprintf("Invalid email %v", err))
-		return
-	}
-
-	if !helpers.CheckPasswordHash(user.Password, params.Password){
-		helpers.RespondWithError(w, 400, "Invalid password")
+	if err != nil || !helpers.CheckPasswordHash(user.Password, params.Password){
+		helpers.RespondWithError(w, 400, "Invalid email or password")
 		return
 	}
 
