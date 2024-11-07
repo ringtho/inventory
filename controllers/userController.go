@@ -31,29 +31,25 @@ func (apiCfg ApiCfg) CreateUserController(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// Check if the required fields are present
 	if params.Name == "" || params.Email == "" || params.Password == "" {
 		helpers.RespondWithError(w, 400, "Name, Username, Email and Password are required")
 		return
 	}
 
-	// Check if the email is valid
 	if !helpers.IsValidEmail(params.Email) {
 		helpers.RespondWithError(w, 400, "Invalid email address")
 		return
 	}
 
-	// Check if the password is strong
 	if !helpers.IsStrongPassword(params.Password) {
 		helpers.RespondWithError(w, 400, "Password is not strong enough")
 		return
 	}
 
-	// Check if the role is valid
 	if params.Role != "admin" && params.Role != "user" {
 		params.Role = "user"
 	}
-	// Hash the password
+
 	password := helpers.HashPassword(params.Password)
 
 	user, err := apiCfg.DB.CreateUser(r.Context(), database.CreateUserParams{
@@ -76,7 +72,7 @@ func (apiCfg ApiCfg) CreateUserController(w http.ResponseWriter, r *http.Request
 			}
 		}
 		// General error response
-		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't create user: %v", err))
+		helpers.RespondWithError(w, 500, fmt.Sprintf("Couldn't create user: %v", err))
 		return
 	}
 	helpers.JSON(w, 201, models.DatabaseUserToUserResponse(user))
@@ -129,7 +125,7 @@ func (apiCfg ApiCfg) GetAllUsersController(
 
 	users, err := apiCfg.DB.GetAllUsers(r.Context())
 	if err != nil {
-		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't fetch users: %v", err))
+		helpers.RespondWithError(w, 500, fmt.Sprintf("Couldn't fetch users: %v", err))
 	}
 	helpers.JSON(w, 200, models.DatabaseUsersToUsers(users))
 }
@@ -166,7 +162,7 @@ func (apiCfg ApiCfg) DeleteUserController(
 		err = apiCfg.DB.DeleteUser(r.Context(), id)
 
 		if err != nil {
-			helpers.RespondWithError(w, 400, fmt.Sprintf("Failed to delete user: %v", err))
+			helpers.RespondWithError(w, 500, fmt.Sprintf("Failed to delete user: %v", err))
 			return
 		}
 		helpers.TextResponse(w, 200, fmt.Sprintf("Successfully deleted user with id: %v", id))

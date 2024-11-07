@@ -28,7 +28,7 @@ func (cfg ApiCfg) CreateCategoryController(
 	) {
 
 	if user.Role == "user" {
-		helpers.RespondWithError(w, 401, "Unauthorized")
+		helpers.RespondWithError(w, 403, "Unauthorized")
 		return
 	} 
 
@@ -85,7 +85,11 @@ func (cfg ApiCfg) GetCategoriesController(w http.ResponseWriter, r *http.Request
 	helpers.JSON(w, 200, models.DatabaseCategoriesToCategories(categories))
 }
 
-func (cfg ApiCfg) DeleteCategoryController(w http.ResponseWriter, r *http.Request, user database.User) {
+func (cfg ApiCfg) DeleteCategoryController(
+	w http.ResponseWriter,
+	r *http.Request,
+	user database.User,
+	) {
 	if user.Role == "user" {
 		helpers.RespondWithError(w, 403, "Unauthorized")
 		return

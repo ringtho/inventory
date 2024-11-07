@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"errors"
 	"log"
 	"os"
 	"time"
@@ -31,7 +32,7 @@ func GenerateJWT(id uuid.UUID, role string) (string, error) {
 
 	secret_key := os.Getenv("SECRET_KEY")
 	if secret_key == "" {
-		log.Fatal("SECRET_KEY not found in the environment")
+		return "", errors.New("SECRET_KEY not found in the environment")
 	}
 	tokenString, err := token.SignedString([]byte(secret_key))
 

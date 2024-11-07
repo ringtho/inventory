@@ -3,6 +3,7 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -259,4 +260,49 @@ func TestCreateUserController_InvalidRoleDefaultsToUser(t *testing.T) {
 	assert.NoError(t, err, "Expected no error while decoding the response body")
 
 	assert.Equal(t, mockUser.Role, response.Role, "Expected the role to be user")
+}
+
+
+func TestCreateUserController_DBCreateError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err, "Expected no error while creating a new mock database")
+	defer db.Close()
+
+	queries := database.New(db)
+	apiCfg := ApiCfg{DB: queries}
+
+	mockUser := models.User{
+		Name:     "John Doe",
+		Username: "johndoe",
+		Email:    "johndoe@gmail.com",
+		Password: "StrongPass123",
+		Role:    "user",
+	}
+
+	mock.ExpectQuery(`INSERT INTO users`).
+		WithArgs(
+			sqlmock.AnyArg(),
+			mockUser.Username,
+			mockUser.Email,
+			mockUser.Name,
+			sqlmock.AnyArg(),
+			mockUser.Role, 
+			sqlmock.AnyArg(), 
+			sqlmock.AnyArg(),
+			sqlmock.AnyArg(),	
+		).
+		WillReturnError(fmt.Errorf("database Error"))
+			
+	payload, _ := json.Marshal(mockUser)
+
+	req, err := http.NewRequest("POST", "/api/v1/register", bytes.NewBuffer(payload))
+	assert.NoError(t, err, "Expected no error while creating a new request")
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(apiCfg.CreateUserController)
+	handler.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+	assert.Contains(t, rr.Body.String(), "Couldn't create user")
 }
