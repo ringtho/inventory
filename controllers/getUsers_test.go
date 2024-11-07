@@ -50,5 +50,5 @@ func TestGetAllUsersController_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(users))
 	assert.Equal(t, "johndoe", users[0].Username)
-	assert.Equal(t, "janesdoe", users[1].Username)
+	assert.Equal(t, "janedoe", users[1].Username)
 }

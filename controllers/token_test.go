@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -18,12 +17,10 @@ func TestGenerateToken(t *testing.T) {
 
 	err := os.Setenv("SECRET_KEY", "your_secret")
 	assert.NoError(t, err)
-
 	// os.Unsetenv("SECRET_KEY")
 
 	token, err := helpers.GenerateJWT(id, role)
 
-	fmt.Println("Token", token)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, token)
 }
