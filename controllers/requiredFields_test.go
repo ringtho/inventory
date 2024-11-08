@@ -45,8 +45,6 @@ func runMissingRequiredFieldsTest(t *testing.T, method, route string) {
 	handler.HandleFunc("/register", cfg.CreateUserController)
 	handler.ServeHTTP(rr, req)
 
-	// fmt.Println("Response Body:", rr.Body.String())
-
 	assert.Equal(t, 400, rr.Code, "Expected status code to be 400")
 	assert.Contains(t, rr.Body.String(), "required")
 }
