@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"github.com/ringtho/inventory/helpers"
@@ -74,7 +76,7 @@ func (cfg ApiCfg) CreateSupplierController(
 	helpers.JSON(w, 201, models.DatabaseSupplierToSupplier(supplier))
 }
 
-func (cfg ApiCfg) GetAllSuppliers(w http.ResponseWriter, r *http.Request, user database.User) {
+func (cfg ApiCfg) GetAllSuppliersController(w http.ResponseWriter, r *http.Request, user database.User) {
 	if user.Role != "admin" {
 		helpers.RespondWithError(w, 403, "Unauthorized")
 		return
@@ -83,7 +85,34 @@ func (cfg ApiCfg) GetAllSuppliers(w http.ResponseWriter, r *http.Request, user d
 	suppliers, err := cfg.DB.GetAllSuppliers(r.Context())
 	if err != nil {
 		helpers.RespondWithError(w, 500, fmt.Sprintf("Couldn't fetch suppliers: %v", err))
+		return
 	}
 
 	helpers.JSON(w, 200, models.DatabaseSuppliersToSuppliers(suppliers))
+}
+
+func (cfg ApiCfg) GetSupplierController(w http.ResponseWriter, r *http.Request, user database.User) {
+	idStr := chi.URLParam(r, "supplierId")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Failed to parse string: %v", err))
+		return
+	}
+	if user.Role != "admin" {
+		helpers.RespondWithError(w, 403, "Unauthorized")
+		return
+	}
+
+	supplier, err := cfg.DB.GetSupplierById(r.Context(), id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			helpers.RespondWithError(w, 404, "Supplier not found")
+			return
+		}
+		
+		helpers.RespondWithError(w, 500, fmt.Sprintf("Couldn't fetch supplier %v", err))
+		return
+	}
+
+	helpers.JSON(w, 200, models.DatabaseSupplierToSupplier(supplier))
 }
