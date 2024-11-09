@@ -58,7 +58,7 @@ func (q *Queries) CreateSupplier(ctx context.Context, arg CreateSupplierParams) 
 }
 
 const deleteSupplier = `-- name: DeleteSupplier :exec
-DELETE FROM suppliers WHERE id = $1
+DELETE FROM suppliers WHERE id=$1
 `
 
 func (q *Queries) DeleteSupplier(ctx context.Context, id uuid.UUID) error {
@@ -103,11 +103,58 @@ func (q *Queries) GetAllSuppliers(ctx context.Context) ([]Supplier, error) {
 }
 
 const getSupplierById = `-- name: GetSupplierById :one
-SELECT id, name, email, description, phone, country, created_at, updated_at FROM suppliers WHERE id = $1
+SELECT id, name, email, description, phone, country, created_at, updated_at FROM suppliers WHERE id=$1
 `
 
 func (q *Queries) GetSupplierById(ctx context.Context, id uuid.UUID) (Supplier, error) {
 	row := q.db.QueryRowContext(ctx, getSupplierById, id)
+	var i Supplier
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Description,
+		&i.Phone,
+		&i.Country,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateSupplier = `-- name: UpdateSupplier :one
+UPDATE suppliers
+SET 
+name = $2,
+email = $3,
+description = $4,
+phone = $5,
+country = $6,
+updated_at = $7
+WHERE id = $1
+RETURNING id, name, email, description, phone, country, created_at, updated_at
+`
+
+type UpdateSupplierParams struct {
+	ID          uuid.UUID
+	Name        string
+	Email       sql.NullString
+	Description sql.NullString
+	Phone       sql.NullString
+	Country     sql.NullString
+	UpdatedAt   time.Time
+}
+
+func (q *Queries) UpdateSupplier(ctx context.Context, arg UpdateSupplierParams) (Supplier, error) {
+	row := q.db.QueryRowContext(ctx, updateSupplier,
+		arg.ID,
+		arg.Name,
+		arg.Email,
+		arg.Description,
+		arg.Phone,
+		arg.Country,
+		arg.UpdatedAt,
+	)
 	var i Supplier
 	err := row.Scan(
 		&i.ID,

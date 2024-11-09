@@ -43,6 +43,7 @@ func Router(DB *database.Queries) http.Handler {
 	apiRouter.Get("/suppliers", cfg.MiddlewareAuth(apiCfg.GetAllSuppliersController))
 	apiRouter.Get("/suppliers/{supplierId}", cfg.MiddlewareAuth(apiCfg.GetSupplierController))
 	apiRouter.Delete("/suppliers/{supplierId}", cfg.MiddlewareAuth(apiCfg.DeleteSupplierController))
+	apiRouter.Put("/suppliers/{supplierId}", cfg.MiddlewareAuth(apiCfg.UpdateSupplierController))
 
 	router.Mount("/api/v1", apiRouter)
 	return router

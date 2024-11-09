@@ -147,6 +147,69 @@ func (cfg ApiCfg) DeleteSupplierController(
 	helpers.TextResponse(w, 200, "Successfully deleted supplier")
 }
 
+func (cfg ApiCfg) UpdateSupplierController(
+	w http.ResponseWriter, 
+	r *http.Request,
+	user database.User,
+	) {
+
+	if user.Role != "admin" {
+		helpers.RespondWithError(w, 403, "Unauthorized")
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	params := Supplier{}
+	err := decoder.Decode(&params)
+
+	if err != nil {
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Failed to parse json: %v", err))
+		return
+	}
+
+	idStr := chi.URLParam(r, "supplierId")
+	id, err := uuid.Parse(idStr)
+
+	if err != nil {
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Failed to parse string: %v", err))
+		return
+	}
+
+	if !cfg.checkSupplierExists(w, r, id) {
+		return
+	}
+
+	email := helpers.NewNullString(params.Email)
+	description := helpers.NewNullString(params.Description)
+	phone := helpers.NewNullString(params.Phone)
+	country := helpers.NewNullString(params.Country)
+
+
+	supplier, err := cfg.DB.UpdateSupplier(
+		r.Context(),
+		database.UpdateSupplierParams{
+		ID: id,
+		Name: params.Name,
+		Email: email,
+		Description: description,
+		Phone: phone,
+		Country: country,
+		UpdatedAt: time.Now().UTC(),
+	})
+
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			if pqErr.Code == "23505" { 
+				helpers.RespondWithError(w, 409, "Supplier Email already exists")
+				return
+			}
+		}
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't update supplier: %v", err))
+		return
+	}
+	helpers.JSON(w, 200, models.DatabaseSupplierToSupplier(supplier))
+}
+
 func (cfg ApiCfg) checkSupplierExists(
 	w http.ResponseWriter,
 	r *http.Request,
