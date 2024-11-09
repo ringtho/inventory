@@ -45,15 +45,8 @@ func (cfg ApiCfg) CreateCategoryController(
 		helpers.RespondWithError(w, 400, "Category name is required")
 		return
 	}
-
-	description := sql.NullString{
-		String: "",
-		Valid: params.Description != nil,
-	}
-
-	if params.Description != nil {
-		description.String = *params.Description
-	}
+	
+	description := helpers.NewNullString(params.Description)
 
 	category, err := cfg.DB.CreateCategory(r.Context(), database.CreateCategoryParams{
 		ID: uuid.New(),

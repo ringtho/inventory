@@ -51,6 +51,7 @@ func (apiCfg ApiCfg) CreateUserController(w http.ResponseWriter, r *http.Request
 	}
 
 	password := helpers.HashPassword(params.Password)
+	profilePic := helpers.NewNullString(&params.ProfilePictureUrl)
 
 	user, err := apiCfg.DB.CreateUser(r.Context(), database.CreateUserParams{
 		ID: 		uuid.New(),
@@ -61,17 +62,17 @@ func (apiCfg ApiCfg) CreateUserController(w http.ResponseWriter, r *http.Request
 		Email: 		params.Email,
 		Password: 	password,
 		Role: 		params.Role,
+		ProfilePictureUrl: profilePic,
 	})
 
 	if err != nil {
-		// Check for unique violation using PostgreSQL
 		if pqErr, ok := err.(*pq.Error); ok {
-			if pqErr.Code == "23505" { // Unique violation error code for PostgreSQL
+			if pqErr.Code == "23505" {
 				helpers.RespondWithError(w, 409, "Email or Username already exists")
 				return
 			}
 		}
-		// General error response
+
 		helpers.RespondWithError(w, 500, fmt.Sprintf("Couldn't create user: %v", err))
 		return
 	}

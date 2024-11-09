@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -42,41 +41,10 @@ func (cfg ApiCfg) CreateSupplierController(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	description := sql.NullString{
-		String: "",
-		Valid: params.Description != nil,
-	}
-
-	if params.Description != nil {
-		description.String = *params.Description
-	}
-
-	email := sql.NullString{
-		String: "",
-		Valid: params.Email != nil,
-	}
-
-	if params.Email != nil {
-		email.String = *params.Email
-	}
-
-	phone := sql.NullString{
-		String: "",
-		Valid: params.Phone != nil,
-	}
-
-	if params.Phone != nil {
-		phone.String = *params.Phone
-	}
-
-	country := sql.NullString{
-		String: "",
-		Valid: params.Country != nil,
-	}
-
-	if params.Country != nil {
-		country.String = *params.Country
-	}
+	description := helpers.NewNullString(params.Description)
+	email := helpers.NewNullString(params.Email)
+	phone := helpers.NewNullString(params.Phone)
+	country := helpers.NewNullString(params.Country)
 
 	supplier, err := cfg.DB.CreateSupplier(r.Context(), database.CreateSupplierParams{
 		ID: uuid.New(),
