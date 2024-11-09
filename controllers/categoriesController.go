@@ -166,6 +166,33 @@ func (cfg ApiCfg) UpdateCategoryController(
 
 }
 
+func (cfg ApiCfg) GetCategoryController(
+	w http.ResponseWriter,
+	r *http.Request,
+	user database.User,
+	) {
+	
+	idStr := chi.URLParam(r, "categoryId")
+	id, err := uuid.Parse(idStr)
+
+	if err != nil {
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Failed to parse string: %v", err))
+		return
+	}
+
+	if !cfg.checkCategoryExists(w, r, id) {
+		return
+	}
+
+	category, err := cfg.DB.GetCategoryById(r.Context(), id)
+	if err != nil {
+		helpers.RespondWithError(w, 500, fmt.Sprintf("Failed to fet category %v", err))
+		return
+	}
+
+	helpers.JSON(w, 200, models.DatabaseCategoryToCategory(category))
+}
+
 func (cfg ApiCfg) checkCategoryExists(
 	w http.ResponseWriter,
 	r *http.Request,

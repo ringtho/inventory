@@ -38,6 +38,7 @@ func Router(DB *database.Queries) http.Handler {
 	apiRouter.Get("/categories", apiCfg.GetCategoriesController)
 	apiRouter.Put("/categories/{categoryId}", cfg.MiddlewareAuth(apiCfg.UpdateCategoryController))
 	apiRouter.Delete("/categories/{categoryId}", cfg.MiddlewareAuth(apiCfg.DeleteCategoryController))
+	apiRouter.Get("/categories/{categoryId}", cfg.MiddlewareAuth(apiCfg.GetCategoryController))
 
 	apiRouter.Post("/suppliers", cfg.MiddlewareAuth(apiCfg.CreateSupplierController))
 	apiRouter.Get("/suppliers", cfg.MiddlewareAuth(apiCfg.GetAllSuppliersController))
