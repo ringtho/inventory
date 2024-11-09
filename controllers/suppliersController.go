@@ -92,14 +92,15 @@ func (cfg ApiCfg) GetAllSuppliersController(w http.ResponseWriter, r *http.Reque
 }
 
 func (cfg ApiCfg) GetSupplierController(w http.ResponseWriter, r *http.Request, user database.User) {
+	if user.Role != "admin" {
+		helpers.RespondWithError(w, 403, "Unauthorized")
+		return
+	}
+	
 	idStr := chi.URLParam(r, "supplierId")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
 		helpers.RespondWithError(w, 400, fmt.Sprintf("Failed to parse string: %v", err))
-		return
-	}
-	if user.Role != "admin" {
-		helpers.RespondWithError(w, 403, "Unauthorized")
 		return
 	}
 
@@ -109,10 +110,52 @@ func (cfg ApiCfg) GetSupplierController(w http.ResponseWriter, r *http.Request, 
 			helpers.RespondWithError(w, 404, "Supplier not found")
 			return
 		}
-		
+
 		helpers.RespondWithError(w, 500, fmt.Sprintf("Couldn't fetch supplier %v", err))
 		return
 	}
 
 	helpers.JSON(w, 200, models.DatabaseSupplierToSupplier(supplier))
+}
+
+func (cfg ApiCfg) DeleteSupplierController(
+	w http.ResponseWriter,
+	r *http.Request,
+	user database.User,
+	) {
+	if user.Role != "admin" {
+		helpers.RespondWithError(w, 403, "Unauthorized")
+		return
+	}
+	
+	idstr := chi.URLParam(r, "supplierId")
+	id, err := uuid.Parse(idstr)
+	if err != nil {
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Failed to parse string %v", err))
+		return
+	}
+
+	if !cfg.checkSupplierExists(w, r, id) {
+		return
+	}
+
+	err = cfg.DB.DeleteSupplier(r.Context(), id)
+	if err != nil {
+		helpers.RespondWithError(w, 500, fmt.Sprintf("Couldn't delete supplier %v", err))
+	}
+
+	helpers.TextResponse(w, 200, "Successfully deleted supplier")
+}
+
+func (cfg ApiCfg) checkSupplierExists(
+	w http.ResponseWriter,
+	r *http.Request,
+	id uuid.UUID,
+	) bool {
+	_, err := cfg.DB.GetSupplierById(r.Context(), id)
+	if err != nil {
+		helpers.RespondWithError(w, 404, "Supplier not found")
+		return false
+	}
+	return true
 }
