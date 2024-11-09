@@ -16,7 +16,8 @@ import (
 const createSupplier = `-- name: CreateSupplier :one
 INSERT INTO suppliers(
     id, name, email, description, phone, country, created_at, updated_at
-) VALUES($1, $2, $3, $4, $5, $6, $7, $8)
+) 
+VALUES($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id, name, email, description, phone, country, created_at, updated_at
 `
 
@@ -42,6 +43,71 @@ func (q *Queries) CreateSupplier(ctx context.Context, arg CreateSupplierParams) 
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
+	var i Supplier
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Description,
+		&i.Phone,
+		&i.Country,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const deleteSupplier = `-- name: DeleteSupplier :exec
+DELETE FROM suppliers WHERE id = $1
+`
+
+func (q *Queries) DeleteSupplier(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteSupplier, id)
+	return err
+}
+
+const getAllSuppliers = `-- name: GetAllSuppliers :many
+SELECT id, name, email, description, phone, country, created_at, updated_at FROM suppliers
+`
+
+func (q *Queries) GetAllSuppliers(ctx context.Context) ([]Supplier, error) {
+	rows, err := q.db.QueryContext(ctx, getAllSuppliers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Supplier
+	for rows.Next() {
+		var i Supplier
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Email,
+			&i.Description,
+			&i.Phone,
+			&i.Country,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSupplierById = `-- name: GetSupplierById :one
+SELECT id, name, email, description, phone, country, created_at, updated_at FROM suppliers WHERE id = $1
+`
+
+func (q *Queries) GetSupplierById(ctx context.Context, id uuid.UUID) (Supplier, error) {
+	row := q.db.QueryRowContext(ctx, getSupplierById, id)
 	var i Supplier
 	err := row.Scan(
 		&i.ID,

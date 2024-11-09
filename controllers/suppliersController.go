@@ -21,7 +21,11 @@ type Supplier struct {
 	Country 	*string `json:"country"`
 }
 
-func (cfg ApiCfg) CreateSupplierController(w http.ResponseWriter, r *http.Request, user database.User) {
+func (cfg ApiCfg) CreateSupplierController(
+	w http.ResponseWriter,
+	r *http.Request,
+	user database.User,
+	) {
 	if user.Role != "admin" {
 		helpers.RespondWithError(w, 403, "Unauthorized")
 		return
@@ -68,4 +72,18 @@ func (cfg ApiCfg) CreateSupplierController(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	helpers.JSON(w, 201, models.DatabaseSupplierToSupplier(supplier))
+}
+
+func (cfg ApiCfg) GetAllSuppliers(w http.ResponseWriter, r *http.Request, user database.User) {
+	if user.Role != "admin" {
+		helpers.RespondWithError(w, 403, "Unauthorized")
+		return
+	}
+
+	suppliers, err := cfg.DB.GetAllSuppliers(r.Context())
+	if err != nil {
+		helpers.RespondWithError(w, 500, fmt.Sprintf("Couldn't fetch suppliers: %v", err))
+	}
+
+	helpers.JSON(w, 200, models.DatabaseSuppliersToSuppliers(suppliers))
 }
