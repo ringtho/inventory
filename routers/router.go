@@ -21,7 +21,6 @@ func Router(DB *database.Queries) http.Handler {
 	apiCfg := controllers.ApiCfg{DB: DB}
 	cfg := middlewares.ApiCfg{DB: DB}
 
-	
 	apiRouter.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		type Message struct {
 			Message string `json:"message"`
@@ -39,6 +38,8 @@ func Router(DB *database.Queries) http.Handler {
 	apiRouter.Get("/categories", apiCfg.GetCategoriesController)
 	apiRouter.Put("/categories/{categoryId}", cfg.MiddlewareAuth(apiCfg.UpdateCategoryController))
 	apiRouter.Delete("/categories/{categoryId}", cfg.MiddlewareAuth(apiCfg.DeleteCategoryController))
+
+	apiRouter.Post("/suppliers", cfg.MiddlewareAuth(apiCfg.CreateSupplierController))
 
 	router.Mount("/api/v1", apiRouter)
 	return router

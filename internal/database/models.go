@@ -20,6 +20,17 @@ type Category struct {
 	CreatedBy   uuid.UUID
 }
 
+type Supplier struct {
+	ID          uuid.UUID
+	Name        string
+	Email       sql.NullString
+	Description sql.NullString
+	Phone       sql.NullString
+	Country     sql.NullString
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
 type User struct {
 	ID                uuid.UUID
 	CreatedAt         time.Time
