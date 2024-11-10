@@ -35,23 +35,6 @@ func DatabaseSupplierToSupplier(dbSupplier database.Supplier) Supplier {
 func DatabaseSuppliersToSuppliers(dbSuppliers []database.Supplier) []Supplier {
 	suppliers := []Supplier{}
 	for _, dbSupplier := range dbSuppliers {
-		// var email, description, phone, country *string
-		// if dbSupplier.Email.Valid {
-		// 	email = &dbSupplier.Email.String
-		// }
-
-		// if dbSupplier.Description.Valid {
-		// 	description = &dbSupplier.Description.String
-		// }
-
-		// if dbSupplier.Phone.Valid {
-		// 	phone = &dbSupplier.Phone.String
-		// }
-
-		// if dbSupplier.Country.Valid {
-		// 	country = &dbSupplier.Country.String
-		// }
-
 		supplier := Supplier{
 			ID: dbSupplier.ID,
 			Name: dbSupplier.Name,

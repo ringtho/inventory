@@ -8,8 +8,8 @@ CREATE TABLE products(
     category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
     supplier_id UUID REFERENCES suppliers(id) ON DELETE SET NULL,
     sku VARCHAR(50) UNIQUE,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL
 );
 
 

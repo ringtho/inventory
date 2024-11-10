@@ -29,8 +29,8 @@ type Product struct {
 	CategoryID  uuid.NullUUID
 	SupplierID  uuid.NullUUID
 	Sku         sql.NullString
-	CreatedAt   sql.NullTime
-	UpdatedAt   sql.NullTime
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type Supplier struct {

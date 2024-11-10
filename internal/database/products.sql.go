@@ -8,6 +8,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -38,8 +39,8 @@ type CreateProductParams struct {
 	CategoryID  uuid.NullUUID
 	SupplierID  uuid.NullUUID
 	Sku         sql.NullString
-	CreatedAt   sql.NullTime
-	UpdatedAt   sql.NullTime
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error) {
@@ -164,7 +165,7 @@ type UpdateProductParams struct {
 	CategoryID  uuid.NullUUID
 	SupplierID  uuid.NullUUID
 	Sku         sql.NullString
-	UpdatedAt   sql.NullTime
+	UpdatedAt   time.Time
 }
 
 func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error) {
