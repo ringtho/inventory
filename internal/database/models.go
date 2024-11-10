@@ -20,6 +20,19 @@ type Category struct {
 	CreatedBy   uuid.UUID
 }
 
+type Product struct {
+	ID          uuid.UUID
+	Name        string
+	Description sql.NullString
+	Price       int32
+	StockLevel  sql.NullInt32
+	CategoryID  uuid.NullUUID
+	SupplierID  uuid.NullUUID
+	Sku         sql.NullString
+	CreatedAt   sql.NullTime
+	UpdatedAt   sql.NullTime
+}
+
 type Supplier struct {
 	ID          uuid.UUID
 	Name        string
