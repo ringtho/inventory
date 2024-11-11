@@ -100,7 +100,7 @@ func (cfg ApiCfg) GetSupplierController(w http.ResponseWriter, r *http.Request, 
 	idStr := chi.URLParam(r, "supplierId")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		helpers.RespondWithError(w, 400, fmt.Sprintf("Failed to parse string: %v", err))
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse string: %v", err))
 		return
 	}
 
@@ -131,7 +131,7 @@ func (cfg ApiCfg) DeleteSupplierController(
 	idstr := chi.URLParam(r, "supplierId")
 	id, err := uuid.Parse(idstr)
 	if err != nil {
-		helpers.RespondWithError(w, 400, fmt.Sprintf("Failed to parse string %v", err))
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse string %v", err))
 		return
 	}
 
@@ -163,7 +163,12 @@ func (cfg ApiCfg) UpdateSupplierController(
 	err := decoder.Decode(&params)
 
 	if err != nil {
-		helpers.RespondWithError(w, 400, fmt.Sprintf("Failed to parse json: %v", err))
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %v", err))
+		return
+	}
+
+	if params.Name == "" {
+		helpers.RespondWithError(w, 400, "Supplier Name is required")
 		return
 	}
 
@@ -171,7 +176,7 @@ func (cfg ApiCfg) UpdateSupplierController(
 	id, err := uuid.Parse(idStr)
 
 	if err != nil {
-		helpers.RespondWithError(w, 400, fmt.Sprintf("Failed to parse string: %v", err))
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse string: %v", err))
 		return
 	}
 

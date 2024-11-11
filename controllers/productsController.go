@@ -33,14 +33,15 @@ func (cfg ApiCfg) CreateProductController(
 	) {
 	if user.Role != "admin" {
 		helpers.RespondWithError(w, 403, "Unauthorized")
+		return
 	}
 
 	decoder := json.NewDecoder(r.Body)
 	params := productParams{}
 	err := decoder.Decode(&params)
 
-	if err != err {
-		helpers.RespondWithError(w, 400, fmt.Sprintf("Failed to Parse string: %v", err))
+	if err != nil {
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %v", err))
 		return
 	}
 
@@ -100,7 +101,7 @@ func (cfg ApiCfg) GetProductController(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(idStr)
 
 	if err != nil {
-		helpers.RespondWithError(w, 400, fmt.Sprintf("Failed to parse string: %v", err))
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse string: %v", err))
 		return
 	}
 
@@ -130,7 +131,7 @@ func (cfg ApiCfg) DeleteProductController(
 
 	if err != nil {
 		helpers.RespondWithError(w, 400, 
-			fmt.Sprintf("Failed to parse string: %v", err))
+			fmt.Sprintf("Couldn't parse string: %v", err))
 		return
 	}
 
@@ -157,21 +158,12 @@ func (cfg ApiCfg) UpdateProductController(
 		return
 	}
 
-	idStr := chi.URLParam(r, "productId")
-	id, err := uuid.Parse(idStr)
-
-	if err != nil {
-		helpers.RespondWithError(w, 400, 
-			fmt.Sprintf("Failed to parse string: %v", err))
-		return
-	}
-
 	decoder := json.NewDecoder(r.Body)
 	params := productParams{}
-	err = decoder.Decode(&params)
+	err := decoder.Decode(&params)
 
 	if err != nil {
-		helpers.RespondWithError(w, 400, fmt.Sprintf("Failed to parse json: %v", err))
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %v", err))
 		return
 	}
 
@@ -182,6 +174,15 @@ func (cfg ApiCfg) UpdateProductController(
 
 	if params.Price <= 0 {
 		helpers.RespondWithError(w, 400, "Product Price must be greater than zero")
+		return
+	}
+
+	idStr := chi.URLParam(r, "productId")
+	id, err := uuid.Parse(idStr)
+
+	if err != nil {
+		helpers.RespondWithError(w, 400, 
+			fmt.Sprintf("Couldn't parse string: %v", err))
 		return
 	}
 
@@ -219,7 +220,6 @@ func (cfg ApiCfg) UpdateProductController(
 		return
 	}
 	helpers.JSON(w, 200, models.DatabaseProductToProduct(product))
-
 }
 
 func (cfg ApiCfg) checkProductExists(

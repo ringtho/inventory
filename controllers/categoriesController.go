@@ -117,6 +117,20 @@ func (cfg ApiCfg) UpdateCategoryController(
 		return
 	}
 
+	decoder := json.NewDecoder(r.Body)
+	params := parameters{}
+	err := decoder.Decode(&params)
+
+	if err != nil {
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %v", err))
+		return
+	}
+
+	if params.Name == "" {
+		helpers.RespondWithError(w, 400, "Category name is required")
+		return
+	}
+
 	idStr := chi.URLParam(r, "categoryId")
 	id, err := uuid.Parse(idStr)
 
@@ -126,20 +140,6 @@ func (cfg ApiCfg) UpdateCategoryController(
 	}
 
 	if !cfg.checkCategoryExists(w, r, id){
-		return
-	}
-
-	decoder := json.NewDecoder(r.Body)
-	params := parameters{}
-	err = decoder.Decode(&params)
-
-	if err != nil {
-		helpers.RespondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %v", err))
-		return
-	}
-
-	if params.Name == "" {
-		helpers.RespondWithError(w, 400, "Category name is required")
 		return
 	}
 
@@ -176,7 +176,7 @@ func (cfg ApiCfg) GetCategoryController(
 	id, err := uuid.Parse(idStr)
 
 	if err != nil {
-		helpers.RespondWithError(w, 400, fmt.Sprintf("Failed to parse string: %v", err))
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't parse string: %v", err))
 		return
 	}
 
@@ -186,7 +186,7 @@ func (cfg ApiCfg) GetCategoryController(
 
 	category, err := cfg.DB.GetCategoryById(r.Context(), id)
 	if err != nil {
-		helpers.RespondWithError(w, 500, fmt.Sprintf("Failed to fet category %v", err))
+		helpers.RespondWithError(w, 500, fmt.Sprintf("Failed to fetch category %v", err))
 		return
 	}
 

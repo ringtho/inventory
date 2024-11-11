@@ -3,7 +3,6 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,8 +11,6 @@ import (
 	"github.com/ringtho/inventory/internal/database"
 	"github.com/stretchr/testify/assert"
 )
-
-
 
 func TestCreateCategory_RequiredField(t *testing.T) {
 	db,_,err := sqlmock.New()
@@ -42,8 +39,6 @@ func TestCreateCategory_RequiredField(t *testing.T) {
 		cfg.CreateCategoryController(w, r, adminUser)
 	})
 	handler.ServeHTTP(rr, req)
-
-	fmt.Println("Response", rr.Body.String())
 	assert.Equal(t, 400, rr.Code)
 	assert.Contains(t, rr.Body.String(), "Category name is required")
 }

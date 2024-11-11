@@ -17,6 +17,14 @@ func TestUnauthorized(t *testing.T){
 	runUnauthorizedTests(t, "POST", "/categories")
 	runUnauthorizedTests(t, "PUT", "/categories/{categoryId}")
 	runUnauthorizedTests(t, "DELETE", "/categories/{categoryId}")
+	runUnauthorizedTests(t, "POST", "/suppliers")
+	runUnauthorizedTests(t, "GET", "/suppliers")
+	runUnauthorizedTests(t, "GET", "/suppliers/{supplierId}")
+	runUnauthorizedTests(t, "DELETE", "/suppliers/{supplierId}")
+	runUnauthorizedTests(t, "PUT", "/suppliers/{supplierId}")
+	runUnauthorizedTests(t, "POST", "/products")
+	runUnauthorizedTests(t, "DELETE", "/products/{productId}")
+	runUnauthorizedTests(t, "PUT", "/products/{productId}")
 }
 
 func runUnauthorizedTests(t *testing.T, method, route string){
@@ -47,6 +55,22 @@ func runUnauthorizedTests(t *testing.T, method, route string){
 	handler.HandleFunc("/categories/{categoryId}", func(w http.ResponseWriter, r *http.Request){
 		apiCfg.UpdateCategoryController(w, r, user)
 		apiCfg.DeleteCategoryController(w, r, user)
+	})
+	handler.HandleFunc("/suppliers", func(w http.ResponseWriter, r *http.Request){
+		apiCfg.CreateSupplierController(w, r, user)
+		apiCfg.GetAllSuppliersController(w, r, user)
+	})
+	handler.HandleFunc("/suppliers/{supplierId}", func(w http.ResponseWriter, r *http.Request){
+		apiCfg.GetSupplierController(w, r, user)
+		apiCfg.DeleteSupplierController(w, r, user)
+		apiCfg.UpdateSupplierController(w, r, user)
+	})
+	handler.HandleFunc("/products", func(w http.ResponseWriter, r *http.Request){
+		apiCfg.CreateProductController(w, r, user)
+	})
+	handler.HandleFunc("/products/{productId}", func(w http.ResponseWriter, r *http.Request){
+		apiCfg.DeleteProductController(w, r, user)
+		apiCfg.UpdateProductController(w, r, user)
 	})
 	handler.ServeHTTP(rr, req)
 
