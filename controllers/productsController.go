@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"github.com/ringtho/inventory/helpers"
@@ -82,4 +84,77 @@ func (cfg ApiCfg) CreateProductController(
 		return
 	}
 	helpers.JSON(w, 201, models.DatabaseProductToProduct(product))
+}
+
+func (cfg ApiCfg) GetAllProductsController(w http.ResponseWriter, r *http.Request) {
+	products, err := cfg.DB.GetProducts(r.Context())
+	if err != nil {
+		helpers.RespondWithError(w, 500, fmt.Sprintf("Couldn't fetch products %v", err))
+		return
+	}
+	helpers.JSON(w, 200, models.DatabaseProductsToProducts(products))
+}
+
+func (cfg ApiCfg) GetProductController(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "productId")
+	id, err := uuid.Parse(idStr)
+
+	if err != nil {
+		helpers.RespondWithError(w, 400, fmt.Sprintf("Failed to parse string: %v", err))
+		return
+	}
+
+	product, err := cfg.DB.GetProduct(r.Context(), id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			helpers.RespondWithError(w, 404, "Product not found")
+			return
+		}
+		helpers.RespondWithError(w, 500, fmt.Sprintf("Couldn't fetch product: %v", err))
+		return
+	}
+	helpers.JSON(w, 200, models.DatabaseProductToProduct(product))
+}
+
+func (cfg ApiCfg) DeleteProductController(
+	w http.ResponseWriter,
+	r *http.Request,
+	user database.User,
+	) {
+	if user.Role != "admin" {
+		helpers.RespondWithError(w, 403, "Unauthorized")
+		return
+	}
+	idStr := chi.URLParam(r, "productId")
+	id, err := uuid.Parse(idStr)
+
+	if err != nil {
+		helpers.RespondWithError(w, 400, 
+			fmt.Sprintf("Failed to parse string: %v", err))
+		return
+	}
+
+	if !cfg.checkProductExists(w, r, id) {
+		return
+	}
+
+	err = cfg.DB.DeleteProduct(r.Context(), id)
+	if err != nil {
+		helpers.RespondWithError(w, 500, 
+			fmt.Sprintf("Failed to delete product: %v", err))
+		return
+	}
+	helpers.TextResponse(w, 200, "Successfully deleted product")
+}
+
+func (cfg ApiCfg) checkProductExists(
+	w http.ResponseWriter, 
+	r *http.Request, 
+	id uuid.UUID) bool {
+	_, err := cfg.DB.GetProduct(r.Context(), id)
+	if err != nil {
+		helpers.RespondWithError(w, 404, "Product not found")
+		return false
+	}
+	return true
 }

@@ -35,3 +35,25 @@ func DatabaseProductToProduct(dbProduct database.Product) Product {
 		UpdatedAt: 		dbProduct.UpdatedAt,
 	}
 }
+
+func DatabaseProductsToProducts(dbProducts []database.Product) []Product {
+	products := []Product{}
+
+	for _, dbProduct := range dbProducts {
+		product := Product{
+			ID: dbProduct.ID,
+			Name: dbProduct.Name,
+			Description: &dbProduct.Description.String,
+			Price: dbProduct.Price,
+			StockLevel: &dbProduct.StockLevel.Int32,
+			CategoryID: &dbProduct.CategoryID.UUID,
+			SupplierID: &dbProduct.SupplierID.UUID,
+			Sku: &dbProduct.Sku.String,
+			CreatedAt: dbProduct.CreatedAt,
+			UpdatedAt: dbProduct.UpdatedAt,
+		}
+		products = append(products, product)
+	}
+
+	return products
+}
