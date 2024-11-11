@@ -50,6 +50,7 @@ func Router(DB *database.Queries) http.Handler {
 	apiRouter.Get("/products", apiCfg.GetAllProductsController)
 	apiRouter.Get("/products/{productId}", apiCfg.GetProductController)
 	apiRouter.Delete("/products/{productId}", cfg.MiddlewareAuth(apiCfg.DeleteProductController))
+	apiRouter.Put("/products/{productId}", cfg.MiddlewareAuth(apiCfg.UpdateProductController))
 
 	router.Mount("/api/v1", apiRouter)
 	return router
