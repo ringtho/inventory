@@ -66,7 +66,7 @@ func (cfg ApiCfg) CreateCategoryController(
 		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't create category: %v", err))
 		return
 	}
-	helpers.JSON(w, 200, models.DatabaseCategoryToCategory(category))
+	helpers.JSON(w, 201, models.DatabaseCategoryToCategory(category))
 }
 
 func (cfg ApiCfg) GetCategoriesController(w http.ResponseWriter, r *http.Request) {

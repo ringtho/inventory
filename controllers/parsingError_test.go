@@ -20,14 +20,14 @@ import (
 
 func TestParsingError_users(t *testing.T) {
 	id := uuid.New()
-	runJsonParsingErrorTestUsers(t, "POST", "/register")
-	runJsonParsingErrorTestUsers(t, "POST", "/login")
-	runJsonParsingErrorTestUsers(t, "POST", "/categories")
-	runJsonParsingErrorTestUsers(t, "POST", "/suppliers")
-	runJsonParsingErrorTestUsers(t, "POST", "/products")
-	runJsonParsingErrorTestUsers(t, "PUT", fmt.Sprintf("/products/%v", id))
-	runJsonParsingErrorTestUsers(t, "PUT", fmt.Sprintf("/suppliers/%v", id))
-	runJsonParsingErrorTestUsers(t, "PUT", fmt.Sprintf("/categories/%v", id))
+	runJsonParsingErrorTest(t, "POST", "/register")
+	runJsonParsingErrorTest(t, "POST", "/login")
+	runJsonParsingErrorTest(t, "POST", "/categories")
+	runJsonParsingErrorTest(t, "POST", "/suppliers")
+	runJsonParsingErrorTest(t, "POST", "/products")
+	runJsonParsingErrorTest(t, "PUT", fmt.Sprintf("/products/%v", id))
+	runJsonParsingErrorTest(t, "PUT", fmt.Sprintf("/suppliers/%v", id))
+	runJsonParsingErrorTest(t, "PUT", fmt.Sprintf("/categories/%v", id))
 
 	runStringParsingErrorTestCategories(t, "DELETE", "/categories/1")
 	runStringParsingErrorTestCategories(t, "PUT", "/categories/1")
@@ -40,7 +40,7 @@ func TestParsingError_users(t *testing.T) {
 	runStringParsingErrorTestProducts(t, "DELETE", "/products/1")
 }
 
-func runJsonParsingErrorTestUsers(t *testing.T, method, route string) {
+func runJsonParsingErrorTest(t *testing.T, method, route string) {
 	db, _, err := sqlmock.New()
 	assert.NoError(t, err)
 	defer db.Close()
@@ -81,7 +81,7 @@ func runJsonParsingErrorTestUsers(t *testing.T, method, route string) {
 		cfg.CreateProductController(w, r, adminUser)
 	})
 	handler.ServeHTTP(rr, req)
-	fmt.Println("Response", rr.Body.String())
+
 	assert.Equal(t, http.StatusBadRequest, rr.Code)
 	assert.Contains(
 		t, 
@@ -101,7 +101,7 @@ func runStringParsingErrorTestCategories(t *testing.T, method, route string) {
 	mockData := models.Category {
 		ID: uuid.New(),
 		Name: "Watches",
-		Description: func() *string { s := "Wonderful watch"; return &s }(),
+		Description: "Wonderful watch",
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 	}
