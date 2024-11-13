@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -63,7 +64,7 @@ func (cfg ApiCfg) CreateCategoryController(
 				return
 			}
 		}
-		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't create category: %v", err))
+		helpers.RespondWithError(w, 500, fmt.Sprintf("Couldn't create category: %v", err))
 		return
 	}
 	helpers.JSON(w, 201, models.DatabaseCategoryToCategory(category))
@@ -101,10 +102,10 @@ func (cfg ApiCfg) DeleteCategoryController(
 	err = cfg.DB.DeleteCategory(r.Context(), id)
 
 	if err != nil {
-		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't delete category: %v", err))
+		helpers.RespondWithError(w, 500, fmt.Sprintf("Couldn't delete category: %v", err))
 		return
 	}
-	helpers.TextResponse(w, 400, fmt.Sprintf("Successfully deleted category with id %v", id))
+	helpers.TextResponse(w, 200, fmt.Sprintf("Successfully deleted category with id %v", id))
 }
 
 func (cfg ApiCfg) UpdateCategoryController(
@@ -159,7 +160,7 @@ func (cfg ApiCfg) UpdateCategoryController(
 				return
 			}
 		}
-		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't update category: %v", err))
+		helpers.RespondWithError(w, 500, fmt.Sprintf("Couldn't update category: %v", err))
 		return
 	}
 	helpers.JSON(w, 200, models.DatabaseCategoryToCategory(category))
@@ -180,12 +181,12 @@ func (cfg ApiCfg) GetCategoryController(
 		return
 	}
 
-	if !cfg.checkCategoryExists(w, r, id) {
-		return
-	}
-
 	category, err := cfg.DB.GetCategoryById(r.Context(), id)
 	if err != nil {
+		if err == sql.ErrNoRows {
+				helpers.RespondWithError(w, 404, "Category not found")
+				return
+		}
 		helpers.RespondWithError(w, 500, fmt.Sprintf("Failed to fetch category %v", err))
 		return
 	}
