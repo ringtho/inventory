@@ -23,6 +23,7 @@ func TestCreateSupplier_Success(t *testing.T) {
 	ptr := func(s string) *string { return &s }
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
+	defer db.Close()
 
 	queries := database.New(db)
 	cfg := ApiCfg{DB: queries}
@@ -88,6 +89,7 @@ func TestCreateSupplier_NameExists(t *testing.T) {
 	ptr := func(s string) *string { return &s }
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
+	defer db.Close()
 
 	queries := database.New(db)
 	cfg := ApiCfg{DB: queries}
@@ -136,6 +138,7 @@ func TestCreateSupplier_DBError(t *testing.T) {
 	ptr := func(s string) *string { return &s }
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
+	defer db.Close()
 
 	queries := database.New(db)
 	cfg := ApiCfg{DB: queries}
@@ -184,6 +187,7 @@ func TestGetSuppliers_Success(t *testing.T) {
 	ptr := func(s string) *string { return &s }
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
+	defer db.Close()
 
 	queries := database.New(db)
 	cfg := ApiCfg{DB: queries}
@@ -245,6 +249,7 @@ func TestGetSuppliers_Success(t *testing.T) {
 func TestGetSuppliers_DBError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
+	defer db.Close()
 
 	queries := database.New(db)
 	cfg := ApiCfg{DB: queries}
@@ -272,6 +277,7 @@ func TestGetSupplier_Success(t *testing.T) {
 	ptr := func(s string) *string { return &s }
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
+	defer db.Close()
 
 	queries := database.New(db)
 	cfg := ApiCfg{DB: queries}
@@ -329,6 +335,7 @@ func TestGetSupplier_Success(t *testing.T) {
 func TestGetSupplier_NotFound(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
+	defer db.Close()
 
 	queries := database.New(db)
 	cfg := ApiCfg{DB: queries}
@@ -359,6 +366,7 @@ func TestGetSupplier_NotFound(t *testing.T) {
 func TestGetSupplier_DBError(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
+	defer db.Close()
 
 	queries := database.New(db)
 	cfg := ApiCfg{DB: queries}
@@ -389,6 +397,7 @@ func TestGetSupplier_DBError(t *testing.T) {
 func TestDeleteSupplier_NotFound(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
+	defer db.Close()
 
 	queries := database.New(db)
 	cfg := ApiCfg{DB: queries}
@@ -420,6 +429,7 @@ func TestDeleteSupplier_DBError(t *testing.T) {
 	ptr := func(s string) *string { return &s }
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
+	defer db.Close()
 
 	queries := database.New(db)
 	cfg := ApiCfg{DB: queries}
@@ -477,6 +487,7 @@ func TestDeleteSupplier_Success(t *testing.T) {
 	ptr := func(s string) *string { return &s }
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
+	defer db.Close()
 
 	queries := database.New(db)
 	cfg := ApiCfg{DB: queries}

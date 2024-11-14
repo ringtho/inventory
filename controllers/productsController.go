@@ -216,7 +216,7 @@ func (cfg ApiCfg) UpdateProductController(
 				return
 			}
 		}
-		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't update product: %v", err))
+		helpers.RespondWithError(w, 500, fmt.Sprintf("Couldn't update product: %v", err))
 		return
 	}
 	helpers.JSON(w, 200, models.DatabaseProductToProduct(product))
