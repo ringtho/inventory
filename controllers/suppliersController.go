@@ -70,7 +70,7 @@ func (cfg ApiCfg) CreateSupplierController(
 				return
 			}
 		}
-		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't create category: %v", err))
+		helpers.RespondWithError(w, 500, fmt.Sprintf("Couldn't create category: %v", err))
 		return
 	}
 	helpers.JSON(w, 201, models.DatabaseSupplierToSupplier(supplier))
@@ -142,6 +142,7 @@ func (cfg ApiCfg) DeleteSupplierController(
 	err = cfg.DB.DeleteSupplier(r.Context(), id)
 	if err != nil {
 		helpers.RespondWithError(w, 500, fmt.Sprintf("Couldn't delete supplier %v", err))
+		return
 	}
 
 	helpers.TextResponse(w, 200, "Successfully deleted supplier")
@@ -209,7 +210,7 @@ func (cfg ApiCfg) UpdateSupplierController(
 				return
 			}
 		}
-		helpers.RespondWithError(w, 400, fmt.Sprintf("Couldn't update supplier: %v", err))
+		helpers.RespondWithError(w, 500, fmt.Sprintf("Couldn't update supplier: %v", err))
 		return
 	}
 	helpers.JSON(w, 200, models.DatabaseSupplierToSupplier(supplier))

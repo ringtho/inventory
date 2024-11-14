@@ -32,10 +32,6 @@ func DatabaseCategoriesToCategories(dbCategories []database.Category) []Category
 
 	
 	for _, dbCategory := range dbCategories {
-		// var description *string
-		// if dbCategory.Description.Valid {
-		// 	description = &dbCategory.Description.String
-		// }
 		category := Category{ 
 			ID: dbCategory.ID,
 			Name: dbCategory.Name,
