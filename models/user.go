@@ -13,7 +13,7 @@ type User struct {
 	Email 				string `json:"email"`
 	Password 			string `json:"password"`
 	Role 				string `json:"role"`
-	ProfilePictureUrl 	string `json:"profile_picture_url"`
+	ProfilePictureUrl 	*string `json:"profile_picture_url"`
 }
 
 type UserResponse struct {

@@ -51,7 +51,7 @@ func (apiCfg ApiCfg) CreateUserController(w http.ResponseWriter, r *http.Request
 	}
 
 	password := helpers.HashPassword(params.Password)
-	profilePic := helpers.NewNullString(&params.ProfilePictureUrl)
+	profilePic := helpers.NewNullString(params.ProfilePictureUrl)
 
 	user, err := apiCfg.DB.CreateUser(r.Context(), database.CreateUserParams{
 		ID: 		uuid.New(),
